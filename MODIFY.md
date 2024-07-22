@@ -96,7 +96,7 @@ llm = ChatOpenAI(
     # This gives this field an id
     # When configuring the end runnable, we can then use this id to configure this field
     ConfigurableField(id="llm"),
-    default_key="openai_gpt_3_5_turbo",
+    default_key="gpt-4o-mini",
     anthropic_claude_3_haiku=ChatAnthropic(
         model="claude-3-haiku-20240307",
         max_tokens=16384,
@@ -137,7 +137,7 @@ Next, scroll up to find the `response_synthesizer` variable, and add an entry fo
 response_synthesizer = (
     default_response_synthesizer.configurable_alternatives(
         ConfigurableField("llm"),
-        default_key="openai_gpt_3_5_turbo",
+        default_key="gpt-4o-mini",
         anthropic_claude_3_haiku=default_response_synthesizer,
         ...
         local_ollama=default_response_synthesizer,

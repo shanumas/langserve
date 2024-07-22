@@ -13,6 +13,12 @@ from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain_community.vectorstores import Weaviate
 from langchain_core.embeddings import Embeddings
 from langchain_openai import OpenAIEmbeddings
+from openai import OpenAI
+
+client = OpenAI(
+    # defaults to os.environ.get("OPENAI_API_KEY")
+    api_key=os.environ["OPENAI_API_KEY"],
+)
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -22,7 +28,7 @@ def get_embeddings_model() -> Embeddings:
     return OpenAIEmbeddings(model="text-embedding-3-small", chunk_size=200)
 
 
-def metadata_extractor(meta: dict, soup: BeautifulSoup) -> dict:
+def metadata_extractor2(meta: dict, soup: BeautifulSoup) -> dict:
     title = soup.find("title")
     description = soup.find("meta", attrs={"name": "description"})
     html = soup.find("html")
@@ -33,6 +39,39 @@ def metadata_extractor(meta: dict, soup: BeautifulSoup) -> dict:
         "language": html.get("lang", "") if html else "",
         **meta,
     }
+
+def extract_metadata(text):
+    prompt = f"""
+    Extract the property type(house/apartment), price (in £), nr bedrooms, and internal square feet from the following 
+    property. Return comma-separated string in the format: [ptype], [price], [beds], [feet].
+    Property Description:
+    {text}
+    Example output:
+    apartment, 100000, 3, 1393
+    """
+    response = client.chat.completions.create(
+        model="gpt-4o-mini",
+        messages=[
+            {"role": "system", "content": "You are a helpful assistant."},
+            {"role": "user", "content": prompt}
+        ]
+    )
+    message_content = response.choices[0].message.content.strip()
+    print(f'Output from GPT {message_content}')
+     # Ensure message content is not empty and parse the result
+    if not message_content:
+        return {"ptype": "apartment", "price": 1500000, "beds": 1, "feet": 100}
+    try:
+        ptype, price, beds, feet = message_content.split(', ')
+        price = int(price.replace('£', '').replace(',', '').strip())
+        beds = int(beds.strip())
+        feet = int(feet.replace(',', '').strip())
+    except (ValueError, IndexError):
+        return {"ptype": "apartment", "price": 1500000, "beds": 1, "feet": 100}
+
+    returnValue = {"ptype":ptype, "price":price, "beds": beds, "feet": feet}
+    return returnValue
+
 
 
 def load_langchain_docs():
