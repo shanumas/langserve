@@ -7,7 +7,7 @@ from parser import langchain_docs_extractor
 import weaviate
 from bs4 import BeautifulSoup, SoupStrainer
 from constants import WEAVIATE_DOCS_INDEX_NAME
-from langchain_community.document_loaders import RecursiveUrlLoader, SitemapLoader
+from langchain_community.document_loaders import TextLoader, DirectoryLoader
 from langchain.indexes import SQLRecordManager, index
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain_community.vectorstores import Weaviate
@@ -40,7 +40,7 @@ def metadata_extractor2(meta: dict, soup: BeautifulSoup) -> dict:
         **meta,
     }
 
-def extract_metadata(text):
+def getMetadata(text):
     prompt = f"""
     Extract the property type(house/apartment), price (in £), nr bedrooms, and internal square feet from the following 
     property. Return comma-separated string in the format: [ptype], [price], [beds], [feet].
@@ -75,18 +75,8 @@ def extract_metadata(text):
 
 
 def load_langchain_docs():
-    return SitemapLoader(
-        "https://python.langchain.com/sitemap.xml",
-        filter_urls=["https://python.langchain.com/"],
-        parsing_function=langchain_docs_extractor,
-        default_parser="lxml",
-        bs_kwargs={
-            "parse_only": SoupStrainer(
-                name=("article", "title", "html", "lang", "content")
-            ),
-        },
-        meta_function=metadata_extractor,
-    ).load()
+    text_loader_kwargs = {'autodetect_encoding': True}
+    return DirectoryLoader("./docs", glob="./*.txt", loader_cls=TextLoader, loader_kwargs=text_loader_kwargs).load()
 
 
 def simple_extractor(html: str) -> str:
@@ -112,7 +102,7 @@ def ingest_docs():
         text_key="text",
         embedding=embedding,
         by_text=False,
-        attributes=["source", "title"],
+        attributes=["ptype", "price", "beds", "feet"],
     )
 
     record_manager = SQLRecordManager(
@@ -121,21 +111,29 @@ def ingest_docs():
     record_manager.create_schema()
 
     docs_from_documentation = load_langchain_docs()
+    # We try to return 'source' and 'title' metadata when querying vector store and
+    # Weaviate will error at query time if one of the attributes is missing from a
+    # retrieved document.
+    for doc in docs_from_documentation:
+        extractedMetadata = getMetadata(doc.page_content)
+        print(f"Extracted Metadata {extractedMetadata}")
+        if extractedMetadata :
+            doc.metadata["ptype"]=extractedMetadata["ptype"]
+            doc.metadata["price"]=extractedMetadata["price"]
+            doc.metadata["beds"]=extractedMetadata["beds"]
+            doc.metadata["feet"]=extractedMetadata["feet"]
+
     logger.info(f"Loaded {len(docs_from_documentation)} docs from documentation")
 
     docs_transformed = text_splitter.split_documents(
         docs_from_documentation
     )
+
     docs_transformed = [doc for doc in docs_transformed if len(doc.page_content) > 10]
 
-    # We try to return 'source' and 'title' metadata when querying vector store and
-    # Weaviate will error at query time if one of the attributes is missing from a
-    # retrieved document.
-    for doc in docs_transformed:
-        if "source" not in doc.metadata:
-            doc.metadata["source"] = ""
-        if "title" not in doc.metadata:
-            doc.metadata["title"] = ""
+
+
+    print(f"Docs transformed: {docs_transformed}")
 
     indexing_stats = index(
         docs_transformed,
