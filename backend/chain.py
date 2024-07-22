@@ -7,7 +7,6 @@ from constants import WEAVIATE_DOCS_INDEX_NAME
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from ingest import get_embeddings_model
-from langchain_anthropic import ChatAnthropic
 from langchain_community.chat_models import ChatCohere
 from langchain_community.vectorstores import Weaviate
 from langchain_core.documents import Document
@@ -30,8 +29,6 @@ from langchain_core.runnables import (
     RunnableSequence,
     chain,
 )
-from langchain_fireworks import ChatFireworks
-from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_openai import ChatOpenAI
 from langsmith import Client
 
@@ -237,41 +234,13 @@ def create_chain(llm: LanguageModelLike, retriever: BaseRetriever) -> Runnable:
 
 
 gpt_3_5 = ChatOpenAI(model="gpt-3.5-turbo-0125", temperature=0, streaming=True)
-claude_3_haiku = ChatAnthropic(
-    model="claude-3-haiku-20240307",
-    temperature=0,
-    max_tokens=4096,
-    anthropic_api_key=os.environ.get("ANTHROPIC_API_KEY", "not_provided"),
-)
-fireworks_mixtral = ChatFireworks(
-    model="accounts/fireworks/models/mixtral-8x7b-instruct",
-    temperature=0,
-    max_tokens=16384,
-    fireworks_api_key=os.environ.get("FIREWORKS_API_KEY", "not_provided"),
-)
-gemini_pro = ChatGoogleGenerativeAI(
-    model="gemini-pro",
-    temperature=0,
-    max_tokens=16384,
-    convert_system_message_to_human=True,
-    google_api_key=os.environ.get("GOOGLE_API_KEY", "not_provided"),
-)
-cohere_command = ChatCohere(
-    model="command",
-    temperature=0,
-    cohere_api_key=os.environ.get("COHERE_API_KEY", "not_provided"),
-)
 llm = gpt_3_5.configurable_alternatives(
     # This gives this field an id
     # When configuring the end runnable, we can then use this id to configure this field
     ConfigurableField(id="llm"),
     default_key="openai_gpt_3_5_turbo",
-    anthropic_claude_3_haiku=claude_3_haiku,
-    fireworks_mixtral=fireworks_mixtral,
-    google_gemini_pro=gemini_pro,
-    cohere_command=cohere_command,
 ).with_fallbacks(
-    [gpt_3_5, claude_3_haiku, fireworks_mixtral, gemini_pro, cohere_command]
+    [gpt_3_5]
 )
 
 retriever = get_retriever()

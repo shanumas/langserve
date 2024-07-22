@@ -6,30 +6,27 @@ authors = ["SN <6432132+samnoyes@users.noreply.github.com>"]
 readme = "README.md"
 
 [tool.poetry.dependencies]
-python = "^3.10"
-langchain = "^0.1.12"
-langsmith =  "^0.1.25"
-langchain-community = ">=0.0.27,<0.1"
-langchain-openai = ">=0.0.8,<0.1"
-langchain-google-genai = ">=0.0.6,<0.1"
-langchain-anthropic = "^0.1.4"
-langchain-fireworks = "^0.1.1"
+python = "^3.11"
+langchain = ">=0.2.0"
+langsmith = "^0.1.89"
+langchain-cohere = ">=0.1.5,<0.2.0"
+langchain-community = "^0.2.7"
+langchain-openai = ">=0.1.7,<0.2.0"
 langserve = {extras = ["server"], version = "^0.0.39"}
-fastapi = "^0.103.1"
-pydantic = "1.10"
-uvicorn = "^0.23.2"
+langchain-weaviate = "^0.0.2"
+langchain-groq = "^0.1.6"
+langgraph = ">=0.1.0,<0.2.0"
 beautifulsoup4 = "^4.12.2"
-weaviate-client = "^3.23.2"
-psycopg2 = "^2.9.7"
+weaviate-client = "^4.0.0"
 lxml = "^4.9.3"
 voyageai = "^0.1.4"
 pillow = "^10.2.0"
-tiktoken = "^0.5.2"
-cohere = "4.45"
+psycopg2-binary = "^2.9.9"
 
-
-[tool.poetry.group.lint.dependencies]
+[tool.poetry.group.dev.dependencies]
+pytest = "^7.3.0"
 ruff = "^0.2.2"
+pandas = "^2.2.2"
 
 [build-system]
 requires = ["poetry-core"]
