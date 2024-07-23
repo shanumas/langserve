@@ -247,7 +247,7 @@ export function ChatWindow(props: { conversationId: string }) {
           value={input}
           maxRows={5}
           marginRight={"56px"}
-          placeholder="What does RunnablePassthrough.assign() do?"
+          placeholder="Newly renovated houses under £1.5M"
           textColor={"white"}
           borderColor={"rgb(58, 58, 61)"}
           onChange={(e) => setInput(e.target.value)}
@@ -279,12 +279,12 @@ export function ChatWindow(props: { conversationId: string }) {
       {messages.length === 0 ? (
         <footer className="flex justify-center absolute bottom-8">
           <a
-            href="https://github.com/langchain-ai/chat-langchain"
+            href="https://www.propfinder.ai/"
             target="_blank"
             className="text-white flex items-center"
           >
-            <img src="/images/github-mark.svg" className="h-4 mr-1" />
-            <span>View Source</span>
+            <img src="/images/search.png" className="h-4 mr-1" />
+            <span>Prop Finder - London</span>
           </a>
         </footer>
       ) : (
