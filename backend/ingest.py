@@ -117,7 +117,9 @@ def ingest_docs():
     for doc in docs_from_documentation:
         extractedMetadata = getMetadata(doc.page_content)
         print(f"Extracted Metadata {extractedMetadata}")
+        txtSource = doc.metadata["source"]
         if extractedMetadata :
+            doc.metadata["source"] = 'https://www.russellsimpson.co.uk/buy/' + txtSource.split('\\')[-1].replace('.txt', '')
             doc.metadata["ptype"]=extractedMetadata["ptype"]
             doc.metadata["price"]=extractedMetadata["price"]
             doc.metadata["beds"]=extractedMetadata["beds"]
