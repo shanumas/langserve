@@ -16,6 +16,7 @@ All of the operations in Chat LangChain are largely based around the vector stor
 - etc
 
 There are two places the vector store is used:
+
 - **Ingestion**: The vector store is used to store the embeddings of every document used as context. Located in [`./backend/ingest.py`](./backend/ingest.py) you can easily modify the provider to use a different vector store.
 - **Retrieval**: The vector store is used to retrieve documents based on a user's query. Located at [`./backend/chain.py`](./backend/chain.py) you can easily modify the provider to use a different vector store.
 
@@ -34,7 +35,7 @@ vectorstore = Weaviate(
     text_key="text",
     embedding=embedding,
     by_text=False,
-    attributes=["source", "title"],
+    attributes=["ptype"], ["price"], ["beds"], ["feet"],
 )
 ```
 
@@ -190,6 +191,7 @@ Finally, you can (but not necessary required) modify the `REPHRASE_TEMPLATE` var
 ### Ingestion Script
 
 At a high level, the only LangChain specific part of the ingestion script are the three webpages which is scrapes for documents to add to the vector store. These links are:
+
 - LangSmith Documentation
 - LangChain API references
 - LangChain Documentation
