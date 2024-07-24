@@ -27,12 +27,7 @@ import { Select, Link } from "@chakra-ui/react";
 import { Source } from "./SourceBubble";
 import { apiBaseUrl } from "../utils/constants";
 
-const MODEL_TYPES = [
-  "gpt-4o-mini"
-];
-
-const defaultLlmValue =
-  MODEL_TYPES[Math.floor(Math.random() * MODEL_TYPES.length)];
+const defaultLlmValue ="gpt-4o-mini";
 
 export function ChatWindow(props: { conversationId: string }) {
   const conversationId = props.conversationId;
@@ -43,14 +38,6 @@ export function ChatWindow(props: { conversationId: string }) {
   const [messages, setMessages] = useState<Array<Message>>([]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [llm, setLlm] = useState(
-    searchParams.get("llm") ?? "gpt-4o-mini",
-  );
-  const [llmIsLoading, setLlmIsLoading] = useState(true);
-  useEffect(() => {
-    setLlm(searchParams.get("llm") ?? defaultLlmValue);
-    setLlmIsLoading(false);
-  }, []);
 
   const [chatHistory, setChatHistory] = useState<
     { human: string; ai: string }[]
@@ -107,7 +94,6 @@ export function ChatWindow(props: { conversationId: string }) {
           timeout: 60000,
         },
       });
-      const llmDisplayName = llm ?? "gpt-4o-mini";
       const streamLog = await remoteChain.streamLog(
         {
           question: messageValue,
@@ -115,12 +101,12 @@ export function ChatWindow(props: { conversationId: string }) {
         },
         {
           configurable: {
-            llm: llmDisplayName,
+            llm: defaultLlmValue,
           },
-          tags: ["model:" + llmDisplayName],
+          tags: ["model:" + defaultLlmValue],
           metadata: {
             conversation_id: conversationId,
-            llm: llmDisplayName,
+            llm: defaultLlmValue,
           },
         },
         {
