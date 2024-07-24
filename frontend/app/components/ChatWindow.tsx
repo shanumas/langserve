@@ -262,7 +262,7 @@ export function ChatWindow(props: { conversationId: string }) {
         </InputRightElement>
       </InputGroup>
 
-      {messages.length === 0 ? (
+      {window.innerWidth >= 900 ? (
         <footer className="flex justify-center absolute bottom-8">
           <a
             href="https://www.propfinder.ai/"
@@ -270,7 +270,7 @@ export function ChatWindow(props: { conversationId: string }) {
             className="text-white flex items-center"
           >
             <img src="/images/search.png" className="h-4 mr-1" />
-            <span>Prop Finder - London</span>
+            <span>Prop Finder - London {window.innerHeight}</span>
           </a>
         </footer>
       ) : (
