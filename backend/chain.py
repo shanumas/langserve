@@ -7,7 +7,6 @@ from constants import WEAVIATE_DOCS_INDEX_NAME
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from ingest import get_embeddings_model
-from langchain_community.chat_models import ChatCohere
 from langchain_community.vectorstores import Weaviate
 from langchain_core.documents import Document
 from langchain_core.language_models import LanguageModelLike
@@ -134,6 +133,7 @@ def serialize_history(request: ChatRequest):
 
 
 def create_chain(llm: LanguageModelLike, retriever: BaseRetriever) -> Runnable:
+    print('create chain reached')
     retriever_chain = create_retriever_chain(
         llm,
         retriever,
@@ -152,45 +152,14 @@ def create_chain(llm: LanguageModelLike, retriever: BaseRetriever) -> Runnable:
     )
     default_response_synthesizer = prompt | llm
 
-    cohere_prompt = ChatPromptTemplate.from_messages(
-        [
-            ("system", COHERE_RESPONSE_TEMPLATE),
-            MessagesPlaceholder(variable_name="chat_history"),
-            ("human", "{question}"),
-        ]
-    )
-
-    @chain
-    def cohere_response_synthesizer(input: dict) -> RunnableSequence:
-        return cohere_prompt | llm.bind(source_documents=input["docs"])
-
-    response_synthesizer = (
-        default_response_synthesizer.configurable_alternatives(
-            ConfigurableField("llm"),
-            default_key="gpt-4o-mini",
-            anthropic_claude_3_haiku=default_response_synthesizer,
-            fireworks_mixtral=default_response_synthesizer,
-            google_gemini_pro=default_response_synthesizer,
-            cohere_command=cohere_response_synthesizer,
-        )
-        | StrOutputParser()
-    ).with_config(run_name="GenerateResponse")
     return (
         RunnablePassthrough.assign(chat_history=serialize_history)
         | context
-        | response_synthesizer
+        | default_response_synthesizer
     )
 
 
 gpt_3_5 = ChatOpenAI(model="gpt-4o-mini", temperature=0, streaming=True)
-llm = gpt_3_5.configurable_alternatives(
-    # This gives this field an id
-    # When configuring the end runnable, we can then use this id to configure this field
-    ConfigurableField(id="llm"),
-    default_key="gpt-4o-mini",
-).with_fallbacks(
-    [gpt_3_5]
-)
 
 retriever = get_retriever()
-answer_chain = create_chain(llm, retriever)
+answer_chain = create_chain(gpt_3_5, retriever)

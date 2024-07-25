@@ -25,7 +25,7 @@ _PROVIDER_MAP = {
 }
 
 _MODEL_MAP = {
-    "openai": "gpt-4o-mini",
+    "openai": "gpt-4o-miniboy",
     "anthropic": "claude-2",
 }
 WEAVIATE_DOCS_INDEX_NAME = "LangChain_Combined_Docs_OpenAI_text_embedding_3_small"

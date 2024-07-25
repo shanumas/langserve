@@ -27,19 +27,6 @@ logger = logging.getLogger(__name__)
 def get_embeddings_model() -> Embeddings:
     return OpenAIEmbeddings(model="text-embedding-3-small", chunk_size=200)
 
-
-def metadata_extractor2(meta: dict, soup: BeautifulSoup) -> dict:
-    title = soup.find("title")
-    description = soup.find("meta", attrs={"name": "description"})
-    html = soup.find("html")
-    return {
-        "source": meta["loc"],
-        "title": title.get_text() if title else "",
-        "description": description.get("content", "") if description else "",
-        "language": html.get("lang", "") if html else "",
-        **meta,
-    }
-
 def getMetadata(text):
     prompt = f"""
     Extract the property type(house/apartment), price (in £), nr bedrooms, and internal square feet from the following 
